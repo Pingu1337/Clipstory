@@ -1,2 +1,8 @@
 /__pycache__
 *.txt
+build/*
+dist/*
+*.spec
+settings.json
+.DS_Store
+*.log

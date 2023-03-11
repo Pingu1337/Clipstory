@@ -7,8 +7,13 @@ name = "pypi"
 pyperclip = "*"
 autopep8 = "*"
 pyautogui = "*"
+pyqt6 = "*"
+pynput = "*"
 
 [dev-packages]
+pyinstaller = "*"
+pillow = "*"
+py2app = "*"
 
 [requires]
 python_version = "3.11"
