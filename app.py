@@ -1,37 +1,63 @@
-from tkinter import Tk, Label, RAISED
-from clipboard_listener import clipboard_listener
+from tkinter import Tk, Label, ttk, Frame, BOTH
+import clipboard_file
+import pyautogui
 import pyperclip
-listener = clipboard_listener()
+
+pyautogui.press('shift')
+
+x, y = pyautogui.position()
 
 
-def updateClipboard():
-    listener.listen(processClipping=processClipping)
-    root.after(ms=100, func=updateClipboard)
+def process_clipping(cliptext):
+    cliptextCleaned = clean_clip_text(cliptext=cliptext)
+    add_label(cliptextCleaned)
 
 
-def processClipping(cliptext):
-    cliptextCleaned = cleanClipText(cliptext=cliptext)
-    # TODO: add new elements for each new item added to the clipboard history
-    label["text"] = cliptextCleaned
-
-
-def cleanClipText(cliptext):
-    # Removing all characters > 65535 (that's the range for tcl)
+def clean_clip_text(cliptext):
     cliptext = "".join([c for c in cliptext if ord(c) <= 65535])
     return cliptext
 
 
-def onClick(labelElem):
+def on_click(labelElem):
     labelText = labelElem["text"]
-    print(listener.history)
+    print(f'paste: {labelText}')
+    clipboard_file.ignore_clip(labelText)
     pyperclip.copy(labelText)
+    pyautogui.hotkey('command', 'tab')
+    pyautogui.hotkey('command', 'v')
+    root.destroy()
+
+
+def on_hover(label):
+    default_color = label["background"]
+    label.bind("<Enter>", func=lambda e: label.config(background="#555555"))
+    label.bind("<Leave>", func=lambda e: label.config(
+        background=default_color))
+
+
+def add_label(cliptext):
+    frame = Frame(root, relief='sunken', bg="#555555")
+    frame.pack(fill=BOTH, expand=True, padx=0, pady=0)
+
+    label = Label(root, text=cliptext, cursor="pointinghand",
+                  pady=5, padx=20, wraplength=400, width=40)
+    label.bind(f"<Button-1>",
+               lambda event, labelElem=label: on_click(labelElem))
+
+    on_hover(label)
+    label.pack()
+
+
+def load_clip_history():
+    clip_history = clipboard_file.read_clipboard()[::-1]
+    for clip in clip_history:
+        add_label(clip.strip())
 
 
 if __name__ == '__main__':
     root = Tk()
-    label = Label(root, text="", cursor="plus",
-                  relief=RAISED, pady=5,  wraplength=500)
-    label.bind("<Button-1>", lambda event, labelElem=label: onClick(labelElem))
-    label.pack()
-    updateClipboard()
+    root.title("Clipstory")
+    root.resizable(False, False)
+    root.geometry(f'+{x - 200}+{y - 200}')
+    load_clip_history()
     root.mainloop()

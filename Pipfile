@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pyperclip = "*"
 autopep8 = "*"
+pyautogui = "*"
 
 [dev-packages]
 
