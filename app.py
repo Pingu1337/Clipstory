@@ -90,9 +90,6 @@ class App():
             label.destroy()
 
 
-keys = []
-
-
 def on_activate_v():
     if not app.suppress:
         app.show()
