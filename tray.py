@@ -2,7 +2,10 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6 import QtCore
 from pynput import keyboard
+import pyperclip
 import pyautogui
+import clipboard_file
+from time import sleep
 
 pyautogui.press('shift')
 
@@ -40,9 +43,32 @@ class MainWindow(QMainWindow):
         self.widget = QListWidget(self)
         self.widget.setMouseTracking(True)
         self.widget.setStyleSheet(
-            "QListWidget::item:hover {background-color:rgba(198, 219, 249, 0.5);}")
-        self.widget.addItems(["One", "Two", "Three"])
+            "QListWidget::item:hover {background-color:rgba(198, 219, 249, 0.5);} QListWidget::item:selected {background-color:rgba(198, 219, 249, 0.5); color:#000000;}"
+            + "QListWidget::item { padding-top: 10px; padding-bottom: 10px;}")
+        self.widget.itemClicked.connect(self.Clicked)
         self.setCentralWidget(self.widget)
+
+    def Clicked(self, item):
+        clip = item.text()
+        clipboard_file.ignore_clip(clip)
+        pyperclip.copy(clip)
+        print(f'paste: {clip}')
+        self.hide()
+        self.paste()
+
+    def paste(self):
+        controller = keyboard.Controller()
+        with controller.pressed(keyboard.Key.cmd):
+            controller.press('v')
+            controller.release('v')
+
+    def load_clipboard_history(self):
+        self.widget.clear()
+        items = clipboard_file.read_clipboard()
+        for item in items:
+            item = QListWidgetItem(item)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.widget.addItem(item)
 
 
 def hideMacDockIcon():
@@ -70,6 +96,7 @@ clip_history = MainWindow()
 
 def show_clip_history():
     x, y = pyautogui.position()
+    clip_history.load_clipboard_history()
     clip_history.move(x - 150, y - 50)
     clip_history.show()
 

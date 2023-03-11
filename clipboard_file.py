@@ -14,6 +14,7 @@ def read_clipboard():
         return []
     f = open(file_name, 'r')
     clips = f.readlines()
+    clips = [clip.strip() for clip in clips]
     f.close()
     return clips
 
