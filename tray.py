@@ -202,6 +202,10 @@ class SettingsDialog(QDialog):
         self.dlg.setLayout(self.dlg.layout)
 
         self.dlg.keyPressEvent = self.keyEvent
+        if self.dlg.exec():
+            print("Success!")
+        else:
+            print("Cancel!")
 
     def max_input_changed(self, s):
         if s == "":
