@@ -8,19 +8,19 @@ The application lives as a tray icon in the menu bar.
 
 Pressing the hotkey (**^V** / **ctrl+V**) brings up a list of you last clips, simply click on the one you want to paste and it will be pasted. When you paste from Clipstory the clip will also be added to the *"real clipboard"* accessed with (**⌘V**). 
 
-### Settings
+## Settings
 To access the settings click on the Clipstory icon in the menu bar.
 <!--![](.gh-assets/menu-bar-icon-settings.png)-->
 <img src=".gh-assets/menu-bar-icon-settings.png"  width="60%" height="30%">
 
-> The settings explained:
+> ### The settings explained:
 > - **Max clipboard history count** –– *the maximum amount of clips saved in in history*
 >   - *default*: **20**
 >   - *max*: **99**
-> - **Save history across sessions** –– *When checked saves the clipboard history even when you log out or restart the computer*
+> - **Save history across sessions** –– *remember clipboard history when you log out*
 >   - default: **true**
 
-### Other
+## Licence
 100% free. 100% open source.
 
 
