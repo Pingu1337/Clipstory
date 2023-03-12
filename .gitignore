@@ -9,3 +9,4 @@ settings.json
 *.log
 Clipstory.sh
 test.sh
+install.sh
