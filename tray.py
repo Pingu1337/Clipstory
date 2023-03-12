@@ -10,7 +10,6 @@ import os
 import logging
 from clipboard_listener import clipboard_listener
 
-# TODO: pyinstaller / py2app are both buggy, just make install.sh?
 listener = clipboard_listener()
 listener.new_thread()
 
