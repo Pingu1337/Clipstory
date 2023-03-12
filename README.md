@@ -20,9 +20,6 @@ To access the settings click on the Clipstory icon in the menu bar.
 > - **Save history across sessions** –– *remember clipboard history when you log out*
 >   - default: **true**
 
-## Licence
-100% free. 100% open source.
-
 
 # Install
 
@@ -33,17 +30,20 @@ Once installed you will need to grant the app permission to "control the compute
 `System Settings > Security and Integrity > Accessability` \
 select the `+` sign, navigate to `/Applications` and select **Clipstory**
 
-
 # Contribute
 
-## prerequisites
+### prerequisites
 
 1. [install homebrew](https://brew.sh/)
 2. *install python:*  `brew install python`
 3. *install pipenv:* `python3 -m pip install pipenv`
 
-## setting up
+### setting up
 - *clone the repo:* `git clone https://github.com/Pingu1337/Clipstory.git`
 - `cd Clipstory`
 - *install packages from pipfile:* `pipenv install`
 - *run the app:* `pipenv run python tray.py`
+
+
+## License
+Clipstory is licensed under the [**MIT License**](LICENSE)
