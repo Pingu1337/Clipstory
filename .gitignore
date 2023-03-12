@@ -1,8 +1,11 @@
 /__pycache__
+/build
+/dist
+/binary
 *.txt
-build/*
-dist/*
 *.spec
 settings.json
 .DS_Store
 *.log
+Clipstory.sh
+test.sh

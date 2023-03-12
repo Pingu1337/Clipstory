@@ -1,8 +1,10 @@
 import os
 import json
+basedir = os.path.dirname(__file__)
 
-file_name = 'clipboard_history.txt'
-settings_file = 'settings.json'
+file_name = os.path.join(basedir, 'data', 'clipboard_history.txt')
+settings_file = os.path.join(basedir, 'data', 'settings.json')
+ignored_file = os.path.join(basedir, 'data', 'ignored_clip.txt')
 
 
 def append_clipboard(clip):
@@ -24,7 +26,7 @@ def pop_clipboard():
 
 
 def clear_clipboard():
-    f = open(file_name, 'w+')
+    f = open(file_name, 'w')
     f.close()
 
 
@@ -39,15 +41,17 @@ def read_clipboard():
 
 
 def ignore_clip(clip):
-    f = open('ignored_clip.txt', 'w')
+    if (clip == "CLIPSTORY:EVENT:CLOSE$"):
+        return
+    f = open(ignored_file, 'w')
     f.write(clip)
     f.close()
 
 
 def ignored(clip):
-    if not os.path.exists('ignored_clip.txt'):
+    if not os.path.exists(ignored_file):
         return False
-    f = open('ignored_clip.txt', 'r')
+    f = open(ignored_file, 'r')
     ignored = f.read()
     f.close()
     return clip == ignored

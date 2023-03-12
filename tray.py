@@ -16,7 +16,8 @@ listener.new_thread()
 
 basedir = os.path.dirname(__file__)
 
-logging.basicConfig(filename='logs.log', encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(filename=os.path.join(
+    basedir, 'data', 'logs.log'), encoding='utf-8', level=logging.DEBUG)
 
 
 pyautogui.press('shift')
