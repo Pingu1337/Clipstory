@@ -297,7 +297,7 @@ menu = QMenu()
 
 # Menu action show clipboard history
 action = QAction("Clipboard History")
-action.setShortcut(QKeySequence('Meta+v'))
+action.setShortcut(QKeySequence(clipboard_file.get_osxHotkey()))
 action.triggered.connect(show_clip_history)
 menu.addAction(action)
 
