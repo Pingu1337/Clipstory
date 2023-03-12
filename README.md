@@ -1,5 +1,5 @@
 # Clipstory - clipboard history for macOS
-> *[Download Latest Release](#)*
+> *[Download Latest Release](https://github.com/Pingu1337/Clipstory/releases/tag/latest)*
 
 # Table of contents
 1. [About](#about)
@@ -16,7 +16,7 @@ Clipboard history is saved to a file and not stored in memory, so it can be reme
 # Installation and Usage
 
 ## Installing the application
-First [download the installer](#) and install it.
+First [download the installer](https://github.com/Pingu1337/Clipstory/releases/tag/latest) and install it.
 
 Once installed you will need to grant the app permission to "control the computer".\
  1. Navigate to `System Settings > Security and Integrity > Accessability` 
