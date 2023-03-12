@@ -45,10 +45,6 @@ class hotkey_listener(QtCore.QObject):
         self.pause.connect(self.pause_listen)
         self.unpause.connect(self.unpause_listen)
         self.paused = False
-        global hotkey
-        hotkey = keyboard.HotKey(
-            keyboard.HotKey.parse(clipboard_file.get_hotkey()),
-            self.on_activate_v)
 
     def on_activate_v(self):
         if not self.paused:
@@ -59,21 +55,14 @@ class hotkey_listener(QtCore.QObject):
 
     def unpause_listen(self):
         # TODO: App needs to be restarted to update the hotkey
-        global hotkey
-        hotkey = keyboard.HotKey(
-            keyboard.HotKey.parse(clipboard_file.get_hotkey()),
-            self.on_activate_v)
         self.paused = False
 
-    def for_canonical(self, f):
-        return lambda k: f(self.listener.canonical(k))
-
     def global_hotkeys(self):
-        global hotkey
+        hotkey = clipboard_file.get_hotkey()
         logging.info(f'listening for hotkey: {hotkey}')
-        self.listener = keyboard.Listener(
-            on_press=self.for_canonical(hotkey.press),
-            on_release=self.for_canonical(hotkey.release))
+        self.listener = keyboard.GlobalHotKeys({
+            hotkey: self.on_activate_v
+        })
         self.listener.start()
 
 
@@ -155,9 +144,8 @@ class SettingsDialog(QDialog):
         check.stateChanged.connect(self.save_history_across_sessions_changed)
 
         # Change the hotkey
-        hotkey_button = QPushButton("Push for Window")
+        hotkey_button = QPushButton("Set Hotkey (requires restart)")
         hotkey_button.clicked.connect(self.button_clicked)
-
         # Add settings to layout
         settings_layout.addWidget(max_label)
         settings_layout.addWidget(max_input)
@@ -214,10 +202,6 @@ class SettingsDialog(QDialog):
         self.dlg.setLayout(self.dlg.layout)
 
         self.dlg.keyPressEvent = self.keyEvent
-        if self.dlg.exec():
-            print("Success!")
-        else:
-            print("Cancel!")
 
     def max_input_changed(self, s):
         if s == "":
