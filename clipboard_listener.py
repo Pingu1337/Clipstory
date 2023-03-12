@@ -19,7 +19,7 @@ class clipboard_listener:
 
     def new_thread(self):
         next = threading.Thread(
-            target=self.nextClip)
+            target=self.nextClip, name="NextClip")
         next.start()
         return next
 

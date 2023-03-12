@@ -70,3 +70,26 @@ def read_settings():
     settings = json.loads(f.read())
     f.close()
     return settings
+
+
+def get_hotkey():
+    settings = read_settings()
+    try:
+        return settings['hotkey']
+    except:
+        return '<ctrl>+v'
+
+
+def get_osxHotkey():
+    settings = read_settings()
+    try:
+        return settings['osxHotkey']
+    except:
+        return 'Meta+v'
+
+
+def set_hotkey(hotkey, osxHotkey):
+    settings = read_settings()
+    settings['hotkey'] = hotkey
+    settings['osxHotkey'] = osxHotkey
+    save_settings(settings)
