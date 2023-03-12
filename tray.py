@@ -9,6 +9,7 @@ from time import sleep
 import os
 import logging
 from clipboard_listener import clipboard_listener
+import threading
 
 listener = clipboard_listener()
 listener.new_thread()
@@ -18,29 +19,51 @@ basedir = os.path.dirname(__file__)
 logging.basicConfig(filename=os.path.join(
     basedir, 'data', 'logs.log'), encoding='utf-8', level=logging.DEBUG)
 
-
 pyautogui.press('shift')
 
 suppress = False
+
+macOsKeys = {
+    "Meta": "<ctrl>",
+    "Control": "<cmd>",
+    "Alt": "<alt>",
+    "Shift": "<shift>"
+}
 
 
 class hotkey_listener(QtCore.QObject):
     hotkey_pressed = QtCore.pyqtSignal()
     listen = QtCore.pyqtSignal()
+    stop_listen = QtCore.pyqtSignal()
+    pause = QtCore.pyqtSignal()
+    unpause = QtCore.pyqtSignal()
+    listener
 
     def __init__(self, parent=None):
         super(hotkey_listener, self).__init__(parent)
         self.listen.connect(self.global_hotkeys)
+        self.pause.connect(self.pause_listen)
+        self.unpause.connect(self.unpause_listen)
+        self.paused = False
 
     def on_activate_v(self):
-        if not suppress:
+        if not self.paused:
             self.hotkey_pressed.emit()
 
+    def pause_listen(self):
+        self.paused = True
+
+    def unpause_listen(self):
+        # TODO: App needs to be restarted to update the hotkey
+        self.paused = False
+
     def global_hotkeys(self):
-        listener = keyboard.GlobalHotKeys({
-            '<ctrl>+v': self.on_activate_v
+        hotkey = clipboard_file.get_hotkey()
+        logging.info(f'listening for hotkey: {hotkey}')
+        self.listener = keyboard.GlobalHotKeys({
+            hotkey: self.on_activate_v
         })
-        listener.start()
+        self.listener.start()
 
 
 class MainWindow(QMainWindow):
@@ -87,12 +110,13 @@ class MainWindow(QMainWindow):
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, listener, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Clipstory Settings")
+        self.listener = listener
         # Settings Values
         self.settings = clipboard_file.read_settings(
-        ) or {'max_input_value': 20, 'save_history_across_sessions': False}
+        ) or {'max_input_value': 20, 'save_history_across_sessions': False, 'hotkey': '<ctrl>+v', 'osxHotkey': 'Meta+v'}
         self.max_input_value = self.settings['max_input_value']
         self.save_history_across_sessions = self.settings['save_history_across_sessions']
 
@@ -118,9 +142,15 @@ class SettingsDialog(QDialog):
         check = QCheckBox("Save history across sessions")
         check.setChecked(self.save_history_across_sessions)
         check.stateChanged.connect(self.save_history_across_sessions_changed)
+
+        # Change the hotkey
+        hotkey_button = QPushButton("Set Hotkey (requires restart)")
+        hotkey_button.clicked.connect(self.button_clicked)
+        # Add settings to layout
         settings_layout.addWidget(max_label)
         settings_layout.addWidget(max_input)
         settings_layout.addWidget(check)
+        settings_layout.addWidget(hotkey_button)
         settings_box.setLayout(settings_layout)
 
         self.layout = QVBoxLayout()
@@ -129,25 +159,71 @@ class SettingsDialog(QDialog):
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
 
+        self.key = ""
+        self.modifiers = []
+
+    def set_hotkey(self):
+        combinations = []
+        osxCombination = []
+        for modifier in self.modifiers:
+            osxCombination.append(modifier)
+            modifier = macOsKeys[modifier]
+            combinations.append(modifier)
+        combinations.append(self.key)
+        osxCombination.append(self.key)
+        self.settings['hotkey'] = "+".join(combinations)
+        self.settings['osxHotkey'] = "+".join(osxCombination)
+
+    def keyEvent(self, event):
+        key = QtCore.Qt.Key(event.key())
+        keyString = QKeySequence(event.key()).toString()
+        if key == QtCore.Qt.Key.Key_Control or key == QtCore.Qt.Key.Key_Shift or key == QtCore.Qt.Key.Key_Alt or key == QtCore.Qt.Key.Key_Meta:
+            self.modifiers.append(keyString)
+        else:
+            self.key = keyString
+            self.set_hotkey()
+            self.dlg.accept()
+
+    def button_clicked(self, s):
+        self.key = ""
+        self.modifiers = []
+        self.listener.pause.emit()
+
+        self.dlg = QDialog(self)
+        self.dlg.setWindowTitle('Record Hotkey')
+        width = 200
+        height = 75
+        self.dlg.setFixedSize(width, height)
+        self.dlg.layout = QVBoxLayout()
+        hotkey = clipboard_file.get_hotkey()
+        hotkey_label = QLabel(hotkey)
+        self.dlg.layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.dlg.layout.addWidget(hotkey_label)
+        self.dlg.setLayout(self.dlg.layout)
+
+        self.dlg.keyPressEvent = self.keyEvent
+        if self.dlg.exec():
+            print("Success!")
+        else:
+            print("Cancel!")
+
     def max_input_changed(self, s):
         if s == "":
             return
-        self.max_input_value = int(s)
+        self.settings['max_input_value'] = int(s)
 
     def save_history_across_sessions_changed(self, s):
-        self.save_history_across_sessions = s == 2
+        self.settings['save_history_across_sessions'] = s == 2
 
     def accept(self):
         setActivationPolicy(2)
-        settings = {
-            'max_input_value': self.max_input_value,
-            'save_history_across_sessions': self.save_history_across_sessions
-        }
-        clipboard_file.save_settings(settings)
+        clipboard_file.save_settings(self.settings)
+        self.listener.unpause.emit()
         return super().accept()
 
     def reject(self) -> None:
         setActivationPolicy(2)
+        self.listener.unpause.emit()
         return super().reject()
 
 
@@ -184,7 +260,12 @@ def show_clip_history():
     clip_history.activateWindow()
 
 
-settings_dialog = SettingsDialog()
+# Setup Listener
+listener = hotkey_listener()
+listener.hotkey_pressed.connect(show_clip_history)
+listener.listen.emit()
+
+settings_dialog = SettingsDialog(listener)
 
 
 def show_options():
@@ -199,16 +280,16 @@ def quit_application():
     app.quit()
 
 
-listener = hotkey_listener()
-listener.hotkey_pressed.connect(show_clip_history)
-listener.listen.emit()
 # Create the menu
 menu = QMenu()
+
+# Menu action show clipboard history
 action = QAction("Clipboard History")
-action.setShortcut(QKeySequence('Meta+v'))
+action.setShortcut(QKeySequence(clipboard_file.get_osxHotkey()))
 action.triggered.connect(show_clip_history)
 menu.addAction(action)
 
+# Menu action show settings
 options = QAction("Settings")
 options.triggered.connect(show_options)
 menu.addAction(options)
