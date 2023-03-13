@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         self.widget.setMouseTracking(True)
         self.widget.setStyleSheet(
             "QListWidget::item:hover {background-color:rgba(198, 219, 249, 0.5);} QListWidget::item:selected {background-color:rgba(198, 219, 249, 0.5); color:#000000;}"
-            + "QListWidget::item { padding-top: 10px; padding-bottom: 10px;}")
+            + "QListWidget::item { padding-top: 10px; padding-bottom: 10px; max-width:200px;}")
         self.widget.itemClicked.connect(self.Clicked)
         self.widget.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self.widget.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         for item in items:
             item = QListWidgetItem(item)
             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            item.setToolTip(item.text())
             self.widget.addItem(item)
 
 
